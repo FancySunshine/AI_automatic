@@ -1,53 +1,59 @@
+import pymysql
 import time
-import numpy as np
+import sys
 import threading
 
+import numpy as np
 
-class MainAutoMatic(threading.Thread):
+"""
+각 조명에 대한 평균값 구하기 (알고리즘 설계)
+"""
+
+# 5초 마다
+# 5분간 데이터 평균
+
+conn = pymysql.connect(host='localhost', user='root', port=3306,
+                       password='0000', db='curtain', charset='utf8')
+cursor = conn.cursor()
+
+sql = "SELECT * FROM brightness"
+
+cursor.execute(sql)
+res = cursor.fetchall()
+conn.commit()
+conn.close()
+
+inside = [data[1] for data in res]
+outside = [data[2] for data in res]
+
+in_average = np.array(inside).mean()
+out_average = np.array(outside).mean()
+
+lux_standard = [0, 100, 200, 300, 400, 500]
+
+
+class AverageLight():
     def __init__(self):
-        threading.Thread.__init__(self)
-        self.linear = np.random.randint(1000, 15000)
-        self.outline = np.random.randint(1000, 15000)
+        self.inside_light = in_average
+        self.outside_light = out_average
+        self.hope_list = lux_standard[int(sys.argv[1])]
 
-    def led_right(self):
-        while True:
-            time.sleep(1)
-            if self.linear >= self.outline:
-                SunAutoMatic().run()
+    def control_function(self):
+        print(f"linear average --> {self.inside_light}")
+        print(f"outline average --> {self.outside_light}")
+
+        if self.inside_light < self.outside_light:
+            if self.inside_light == self.hope_list:
+                print("LED|0.999")
             else:
-                SunAutoMatic().run()
-
-
-class LedAutoMatic(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
-        self.led = np.random.randint(100, 10000)
-
-    def run(self):
-        while True:
-            time.sleep(1)
-            if self.led == 100 and 10000:
-                print("LED 키자")
+                print("LED trun off!")
+        else:
+            if self.inside_light == self.hope_list:
+                print("OK")
+            elif self.hope_list > self.inside_light:
+                print("curtain up")
             else:
-                print("LED 끄자")
+                print("curtain down")
 
 
-class SunAutoMatic(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
-        self.linear = np.random.randint(1000, 15000)
-        self.outline = np.random.randint(1000, 15000)
-
-    def run(self):
-        while True:
-            time.sleep(1)
-            if self.linear < self.outline:
-                print("커텐 치자")
-                LedAutoMatic().run()
-            else:
-                print("커텐 닫자")
-                LedAutoMatic().run()
-
-
-if __name__ == "__main__":
-    MainAutoMatic().led_right()
+AverageLight().control_function()
