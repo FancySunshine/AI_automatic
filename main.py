@@ -28,6 +28,7 @@ def data_information():
 
 class AverageLight:
     def __init__(self):
+        self.data_deque = deque([])
         self.inside_light = [data[1] for data in data_information()]
         self.outside_light = [data[2] for data in data_information()]
         self.hope_list = int(sys.argv[1])
@@ -37,18 +38,16 @@ class AverageLight:
         print(f"outside_right --> {self.outside_light}")
         # curtain
         for data in self.inside_light:
-            deque_data = deque([])
-            deque_data.append(data)
-            print(deque_data)
+            self.data_deque.append(data)
+            data_del = self.data_deque.popleft()
 
-            while deque_data:
-                if data > self.hope_list:
-                    for i in range(6):
-                        time.sleep(1)
-                        print(f"curtain 단계를 {i}단계까지 올립니다.")
-                        continue
-                elif self.inside_light == self.hope_list:
-                    break
+            if data_del > self.hope_list:
+                for i in range(6):
+                    time.sleep(1)
+                    print(f"curtain 단계를 {i}단계까지 올립니다.")
+                    continue
+            elif self.inside_light == self.hope_list:
+                break
 
 
 AverageLight().control_function()
